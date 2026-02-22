@@ -23,15 +23,17 @@ impl Plugin for CCGLotusPlugin {
 
 // An example asset that contains a mesh and animation.
 const GLTF_PATH: &str = "models/card_pack.gltf";
+const CARD_PATH: &str = "models/card_base_model.gltf";
 
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
+    // Spawn camera
     commands.spawn((
         Camera3d::default(),
-        Transform::from_xyz(6.4, 0.8, 0.0).looking_at(Vec3::new(0.0, 0.3, 0.0), Vec3::Y),
+        Transform::from_xyz(0.0, 0.0, 10.0).looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
         // EnvironmentMapLight {
         //     diffuse_map: asset_server.load("environment_maps/pisa_diffuse_rgb9e5_zstd.ktx2"),
         //     specular_map: asset_server.load("environment_maps/pisa_specular_rgb9e5_zstd.ktx2"),
@@ -40,6 +42,7 @@ fn setup(
         // },
     ));
 
+    // Spawn light
     commands.spawn((
         DirectionalLight {
             shadows_enabled: true,
@@ -79,23 +82,24 @@ fn setup(
 
     // Spawn an entity with our components, and connect it to an observer that
     // will trigger when the scene is loaded and spawned.
-    commands
-        .spawn(animation_to_play)
-        .insert(SceneRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset(GLTF_PATH),)))
-        .insert(Rotate)
-        .insert(Transform::from_rotation(Quat::from_euler(EulerRot::ZYX, FRAC_PI_2, 0.0, FRAC_PI_2)))
-        .observe(play_animation_when_ready);
+    commands.spawn((
+        // animation_to_play,
+        SceneRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset(GLTF_PATH),)),
+        Rotate,
+        Transform::from_rotation(Quat::from_euler(EulerRot::ZYX, FRAC_PI_2, 0.0, 0.0))
+            .with_translation(vec3(5.0, 0.0, 0.0))
+    ))
+    // .observe(play_animation_when_ready)
+    ;
+
+    commands.spawn((
+        SceneRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset(CARD_PATH),)),
+        Rotate,
+        Transform::from_rotation(Quat::from_euler(EulerRot::ZYX, FRAC_PI_2, 0.0, 0.0))
+            .with_translation(vec3(-5.0, 0.0, 0.0))
+    ));
 
 
-    // commands.spawn((
-    //     SceneRoot(
-    //         asset_server.load(GltfAssetLabel::Scene(0).from_asset("models/card_pack.gltf"),)
-    //     ),
-    //     Rotate,
-    //     Transform::from_rotation(
-    //         Quat::from_euler(EulerRot::ZYX, FRAC_PI_2, 0.0, FRAC_PI_2)
-    //     ),
-    // ));
     
 }
 
@@ -106,7 +110,6 @@ fn play_animation_when_ready(
     children: Query<&Children>,
     animations_to_play: Query<&AnimationToPlay>,
     mut players: Query<&mut AnimationPlayer>,
-    asset_server: Res<AssetServer>,
 ) {
     // The entity we spawned in `setup_mesh_and_animation` is the trigger's target.
     // Start by finding the AnimationToPlay component we added to that entity.
