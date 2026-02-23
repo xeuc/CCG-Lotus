@@ -13,8 +13,7 @@ impl Plugin for CCGLotusPlugin {
         app
             .insert_resource(DirectionalLightShadowMap { size: 4096 })
             .add_systems(Startup, setup)
-            .add_systems(Startup, spawn_cube)
-            // .add_systems(Update, animate_light_direction)
+            .add_systems(Startup, spawn_card)
             .add_systems(Update, rotate_x)
             .add_systems(Update, rotate_z)
         ;
@@ -85,13 +84,13 @@ fn setup(
     // Spawn an entity with our components, and connect it to an observer that
     // will trigger when the scene is loaded and spawned.
     commands.spawn((
-        // animation_to_play,
+        animation_to_play,
         SceneRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset(GLTF_PATH),)),
         RotateX,
         Transform::from_rotation(Quat::from_euler(EulerRot::ZYX, FRAC_PI_2, 0.0, 0.0))
             .with_translation(vec3(2.0, 0.0, 0.0))
     ))
-    // .observe(play_animation_when_ready)
+    .observe(play_animation_when_ready)
     ;
 
     commands.spawn((
@@ -106,7 +105,7 @@ fn setup(
 }
 
 
-fn spawn_cube(
+fn spawn_card(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -114,7 +113,8 @@ fn spawn_cube(
 ) {
 
     let image_with_default_sampler = asset_server.load_with_settings(
-        "textures\\red_border.png",
+        // "textures\\red_border.png",
+        "textures\\rainbow_border.png",
         |s: &mut ImageLoaderSettings| {
             *s = ImageLoaderSettings {
                 sampler: ImageSampler::Descriptor(ImageSamplerDescriptor {
@@ -136,27 +136,34 @@ fn spawn_cube(
         MeshMaterial3d(materials.add(StandardMaterial {
             base_color_texture: Some(image_with_default_sampler.clone()),
             alpha_mode: AlphaMode::Mask(0.5),
+            metallic: 0.0,
+            perceptual_roughness: 1.0,
             ..default()
         })),
-        RotateZ,
+        // RotateZ,
         Transform::from_translation(Vec3::ZERO),
-    ));
+    ))
+    .with_children(|parent| {
+        let photo_texture = asset_server.load("textures/40921678_S1J5493BMXVBDKB3RF7P22B9N0.jpeg");
 
-    let photo_texture = asset_server.load("textures/40921678_S1J5493BMXVBDKB3RF7P22B9N0.jpeg");
+        // Spawn image
+        parent.spawn((
+            Mesh3d(meshes.add(Plane3d {
+                normal: Dir3::Z,
+                half_size: Vec2::new(0.65, 0.95), // 13*19
+            })),
+            MeshMaterial3d(materials.add(StandardMaterial {
+                base_color_texture: Some(photo_texture),
+                metallic: 0.0,
+                perceptual_roughness: 1.0,
+                ..default()
+            })),
+            // RotateZ,
+            Transform::from_translation(Vec3::new(0.0, 0.0, 0.32)), // Don't care about z-fighting
+        ));
+    });
 
-    // Spawn image
-    commands.spawn((
-        Mesh3d(meshes.add(Plane3d {
-            normal: Dir3::Z,
-            half_size: Vec2::new(0.65, 0.95), // 13*19
-        })),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color_texture: Some(photo_texture),
-            ..default()
-        })),
-        RotateZ,
-        Transform::from_translation(Vec3::new(0.0, 0.0, 0.32)),
-    ));
+
 
 }
 
