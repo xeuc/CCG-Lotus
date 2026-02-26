@@ -9,6 +9,9 @@ use bevy::{
     winit::WinitSettings,
 };
 
+mod app;
+mod move_camera;
+
 // the `bevy_main` proc_macro generates the required boilerplate for Android
 #[bevy_main]
 /// The entry point for the application. Is `pub` so that it can be used from
@@ -41,6 +44,7 @@ pub fn main() {
                 ..default()
             }),
     )
+    .add_plugins(app::CCGLotusPlugin)
     // Make the winit loop wait more aggressively when no user input is received
     // This can help reduce cpu usage on mobile devices
     .insert_resource(WinitSettings::mobile())
@@ -57,6 +61,13 @@ pub fn main() {
     )
     .run();
 }
+
+// fn main() {
+//     App::new()
+//         .add_plugins(DefaultPlugins)
+//         .add_plugins(app::CCGLotusPlugin)
+//         .run();
+// }
 
 fn touch_camera(
     window: Query<&Window>,
@@ -98,44 +109,44 @@ fn setup_scene(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // plane
-    commands.spawn((
-        Mesh3d(meshes.add(Plane3d::default().mesh().size(5.0, 5.0))),
-        MeshMaterial3d(materials.add(Color::srgb(0.1, 0.2, 0.1))),
-    ));
-    // cube
-    commands.spawn((
-        Mesh3d(meshes.add(Cuboid::default())),
-        MeshMaterial3d(materials.add(Color::srgb(0.5, 0.4, 0.3))),
-        Transform::from_xyz(0.0, 0.5, 0.0),
-    ));
-    // sphere
-    commands.spawn((
-        Mesh3d(meshes.add(Sphere::new(0.5).mesh().ico(4).unwrap())),
-        MeshMaterial3d(materials.add(Color::srgb(0.1, 0.4, 0.8))),
-        Transform::from_xyz(1.5, 1.5, 1.5),
-    ));
-    // light
-    commands.spawn((
-        PointLight {
-            intensity: 1_000_000.0,
-            // Shadows makes some Android devices segfault, this is under investigation
-            // https://github.com/bevyengine/bevy/issues/8214
-            #[cfg(not(target_os = "android"))]
-            shadows_enabled: true,
-            ..default()
-        },
-        Transform::from_xyz(4.0, 8.0, 4.0),
-    ));
-    // camera
-    commands.spawn((
-        Camera3d::default(),
-        Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        // MSAA makes some Android devices panic, this is under investigation
-        // https://github.com/bevyengine/bevy/issues/8229
-        #[cfg(target_os = "android")]
-        Msaa::Off,
-    ));
+    // // plane
+    // commands.spawn((
+    //     Mesh3d(meshes.add(Plane3d::default().mesh().size(5.0, 5.0))),
+    //     MeshMaterial3d(materials.add(Color::srgb(0.1, 0.2, 0.1))),
+    // ));
+    // // cube
+    // commands.spawn((
+    //     Mesh3d(meshes.add(Cuboid::default())),
+    //     MeshMaterial3d(materials.add(Color::srgb(0.5, 0.4, 0.3))),
+    //     Transform::from_xyz(0.0, 0.5, 0.0),
+    // ));
+    // // sphere
+    // commands.spawn((
+    //     Mesh3d(meshes.add(Sphere::new(0.5).mesh().ico(4).unwrap())),
+    //     MeshMaterial3d(materials.add(Color::srgb(0.1, 0.4, 0.8))),
+    //     Transform::from_xyz(1.5, 1.5, 1.5),
+    // ));
+    // // light
+    // commands.spawn((
+    //     PointLight {
+    //         intensity: 1_000_000.0,
+    //         // Shadows makes some Android devices segfault, this is under investigation
+    //         // https://github.com/bevyengine/bevy/issues/8214
+    //         #[cfg(not(target_os = "android"))]
+    //         shadows_enabled: true,
+    //         ..default()
+    //     },
+    //     Transform::from_xyz(4.0, 8.0, 4.0),
+    // ));
+    // // camera
+    // commands.spawn((
+    //     Camera3d::default(),
+    //     Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+    //     // MSAA makes some Android devices panic, this is under investigation
+    //     // https://github.com/bevyengine/bevy/issues/8229
+    //     #[cfg(target_os = "android")]
+    //     Msaa::Off,
+    // ));
 
     // Test ui
     commands
