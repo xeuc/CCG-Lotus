@@ -2,7 +2,14 @@
 name = "Lotus-CCG"
 version = "0.1.0"
 edition = "2024"
+description = "Collectible Card Game with Bevy"
+publish = false
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 bevy = { version = "0.18.0", features = ["jpeg"] }
 bevy_tweening = "0.15.0"
+
+[lib]
+name = "Lotus_CCG"
+crate-type = ["lib", "cdylib"]
