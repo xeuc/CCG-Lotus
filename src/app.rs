@@ -4,7 +4,7 @@
 
 use std::f32::consts::*;
 
-use bevy::{image::{ImageAddressMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor}, light::{CascadeShadowConfigBuilder, DirectionalLightShadowMap}, prelude::*, scene::SceneInstanceReady};
+use bevy::{light::{CascadeShadowConfigBuilder, DirectionalLightShadowMap}, prelude::*, scene::SceneInstanceReady};
 
 pub struct CCGLotusPlugin;
 

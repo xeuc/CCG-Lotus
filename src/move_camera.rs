@@ -28,12 +28,6 @@ const MOVE_SPEED: f32 = 8.0;
 const FAST_MULTIPLIER: f32 = 2.0;
 const MOUSE_SENSITIVITY: f32 = 0.0025;
 
-// =========================
-// Marker component
-// =========================
-
-#[derive(Component)]
-pub struct FreeCamera;
 
 // =========================
 // Mouse state
