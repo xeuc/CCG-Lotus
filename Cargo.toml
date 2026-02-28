@@ -11,5 +11,5 @@ bevy = { version = "0.18.0", features = ["jpeg"] }
 bevy_tweening = "0.15.0"
 
 [lib]
-name = "Lotus_CCG"
+name = "lotus_ccg"
 crate-type = ["lib", "cdylib"]
