@@ -1,29 +1,55 @@
 // From https://bevy.org/examples/gltf/load-gltf/
 // From https://bevy.org/examples/animation/animated-mesh/
 
-
 use std::{f32::consts::*, time::Duration};
-use bevy_tweening::{Sequence, Tween, TweenAnim, TweeningPlugin, lens::TransformPositionLens};
 
+use bevy::{light::CascadeShadowConfigBuilder, prelude::*, scene::SceneInstanceReady};
+use bevy_tweening::{Lens, Sequence, Tween, TweenAnim, TweeningPlugin, lens::TransformPositionLens};
 
-use bevy::{light::{CascadeShadowConfigBuilder, DirectionalLightShadowMap}, prelude::*, scene::SceneInstanceReady};
+pub struct SetupPlugin;
 
-pub struct CCGLotusPlugin;
-
-impl Plugin for CCGLotusPlugin {
+impl Plugin for SetupPlugin {
     fn build(&self, app: &mut App) {
         app
-            .insert_resource(DirectionalLightShadowMap { size: 4096 })
             .add_plugins(TweeningPlugin)
-            // .add_plugins(CameraControllerPlugin)
-            .add_systems(Startup, setup)
-            .add_systems(Startup, spawn_card)
-            .add_systems(Update, rotate_x)
-            .add_systems(Update, rotate_y)
-            .add_systems(Update, rotate_z)
-        ;
-
+            .add_systems(Startup, (
+                setup_scene,
+                setup,
+                spawn_card,
+            ))
+            ;
     }
+}
+
+
+// SETUP
+/// set up a simple 3D scene
+fn setup_scene(
+    mut commands: Commands,
+) {
+    // spawn button test ui
+    commands
+        .spawn((
+            Button,
+            Node {
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                position_type: PositionType::Absolute,
+                left: px(50),
+                right: px(50),
+                bottom: px(50),
+                ..default()
+            },
+        ))
+        .with_child((
+            Text::new("Test Button"),
+            TextFont {
+                font_size: 30.0,
+                ..default()
+            },
+            TextColor::BLACK,
+            TextLayout::new_with_justify(Justify::Center),
+        ));
 }
 
 
@@ -101,32 +127,8 @@ fn setup(
 
 }
 
-use bevy_tweening::Lens;
 
-use crate::move_camera::CameraControllerPlugin;
 
-pub struct BezierPositionLens {
-    pub p0: Vec3,
-    pub p1: Vec3,
-    pub p2: Vec3,
-    pub p3: Vec3,
-}
-
-impl Lens<Transform> for BezierPositionLens {
-    fn lerp(&mut self, mut target: Mut<'_, bevy::prelude::Transform>, ratio: f32) {
-        let t = ratio;
-        let u = 1.0 - t;
-
-        // cubic bezier
-        let pos =
-            u*u*u * self.p0 +
-            3.0*u*u*t * self.p1 +
-            3.0*u*t*t * self.p2 +
-            t*t*t * self.p3;
-
-        target.translation = pos;
-    }
-}
 
 fn spawn_card(
     mut commands: Commands,
@@ -283,57 +285,12 @@ fn play_animation_when_ready(
 }
 
 
-fn _animate_light_direction(
-    time: Res<Time>,
-    mut query: Query<&mut Transform, With<DirectionalLight>>,
-) {
-    for mut transform in &mut query {
-        transform.rotation = Quat::from_euler(
-            EulerRot::ZYX,
-            0.0,
-            time.elapsed_secs() * PI / 5.0,
-            -FRAC_PI_4,
-        );
-    }
-}
-
-fn rotate_x(
-    time: Res<Time>,
-    mut query: Query<&mut Transform, With<RotateX>>,
-) {
-    for mut transform in &mut query {
-        transform.rotation *= Quat::from_rotation_x(time.delta_secs() * PI / 2.0);
-    }
-}
-
-fn rotate_y(
-    time: Res<Time>,
-    mut query: Query<&mut Transform, With<RotateY>>,
-) {
-    for mut transform in &mut query {
-        transform.rotation *= Quat::from_rotation_y(time.delta_secs() * PI / 2.0);
-    }
-}
-
-fn rotate_z(
-    time: Res<Time>,
-    mut query: Query<&mut Transform, With<RotateZ>>,
-) {
-    for mut transform in &mut query {
-        transform.rotation *= Quat::from_rotation_z(time.delta_secs() * PI / 2.0);
-    }
-}
-
-#[derive(Component)]
-struct RotateX;
-
-#[derive(Component)]
-struct RotateY;
-
-#[derive(Component)]
-struct RotateZ;
 
 
+
+
+
+// Components
 // A component that stores a reference to an animation we want to play. This is
 // created when we start loading the mesh (see `setup_mesh_and_animation`) and
 // read when the mesh has spawned (see `play_animation_once_loaded`).
@@ -341,4 +298,27 @@ struct RotateZ;
 struct AnimationToPlay {
     graph_handle: Handle<AnimationGraph>,
     index: AnimationNodeIndex,
+}
+
+pub struct BezierPositionLens {
+    pub p0: Vec3,
+    pub p1: Vec3,
+    pub p2: Vec3,
+    pub p3: Vec3,
+}
+
+impl Lens<Transform> for BezierPositionLens {
+    fn lerp(&mut self, mut target: Mut<'_, bevy::prelude::Transform>, ratio: f32) {
+        let t = ratio;
+        let u = 1.0 - t;
+
+        // cubic bezier
+        let pos =
+            u*u*u * self.p0 +
+            3.0*u*u*t * self.p1 +
+            3.0*u*t*t * self.p2 +
+            t*t*t * self.p3;
+
+        target.translation = pos;
+    }
 }

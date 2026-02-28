@@ -1,11 +1,3 @@
-use bevy::prelude::*;
-
-mod app;
-mod move_camera;
-
-fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(app::CCGLotusPlugin)
-        .run();
-}
+// entry point for the application
+use lotus_ccg::main;
+// cargo ndk -t arm64-v8a -o android_example/app/src/main/jniLibs build
