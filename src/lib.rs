@@ -9,25 +9,36 @@ mod input;
 #[cfg(target_os = "android")]
 mod android;
 mod move_camera;
+mod dev_playground;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Default, States)]
 pub enum GameState {
     #[default]
     InUI, // Player is in User interface, do not spawn anything yet (except buttons)
     OpeningPack, // Player is oppening the pack that is in ressource
+    DevPlayground,
     Battling, // TODO implement
+    Binder, // TODO implement
+    DeckBuilder, // TODO implement
+    HomeScreen, // TODO implement
 }
 
 
 #[derive(Resource, Default)]
 struct _PackIDToOpen(u32);
 
-
 // the `bevy_main` proc_macro generates the required boilerplate for Android
 #[bevy_main]
 pub fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Lotus CCG".into(),
+                resolution: (360, 780).into(),
+                ..default()
+            }),
+            ..default()
+        }))
         .init_state::<GameState>()
         .insert_resource(DirectionalLightShadowMap { size: 4096 })
         .add_plugins((
@@ -39,8 +50,16 @@ pub fn main() {
             input::InputPlugin,
             #[cfg(target_os = "android")]
             android::AndroidPlugin,
-            move_camera::CameraControllerPlugin,
+            dev_playground::DevPlaygroundPlugin,
+            // move_camera::CameraControllerPlugin,
         ))
         .run();
 }
 
+
+#[derive(Component)]
+enum MenuButton {
+    OpenPack,
+    DevPlayground,
+    InUI,
+}

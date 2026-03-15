@@ -1,12 +1,17 @@
 // From https://bevy.org/examples/gltf/load-gltf/
 // From https://bevy.org/examples/animation/animated-mesh/
 
+use bevy::{
+    color::palettes::basic::*,
+    prelude::*,
+    light::CascadeShadowConfigBuilder,
+};
+
 use std::{f32::consts::*, time::Duration};
 
-use bevy::{light::CascadeShadowConfigBuilder, prelude::*};
 use bevy_tweening::{Lens, Tween, TweenAnim, TweeningPlugin};
 
-use crate::GameState;
+use crate::{GameState, MenuButton};
 
 
 // An example asset that contains a mesh and animation.
@@ -18,7 +23,8 @@ const GLTF_PATH: &str = "models/GenerickPack4.gltf";
 const _CUBE_PATH_16: &str = "models/cubeScale16.gltf";
 const _CUBE_PATH_01: &str = "models/cubeScale1.gltf";
 const _CUBE_PATH_08: &str = "models/cubeScale8.gltf";
-
+const TEST_ARMATURE_PATH: &str = "models/blender_armature_pack.gltf";
+// const TEST_ARMATURE_PATH: &str = "models/test_armature.gltf";
 
 const _PACK_POS: Vec3 = Vec3::new(0.0, 0.0, 0.0);
 const CARP_POS: Vec3 = Vec3::new(0.0, 0.0, 0.0);
@@ -34,11 +40,13 @@ impl Plugin for OpenCardPlugin {
                 spawn_camera,
                 spawn_light,
                 spawn_card_pack,
+                spawn_return_back_to_ui_button,
                 // _spawn_cube,
             ))
             .add_systems(Update, (
                 setup_scene_once_loaded,
-                keyboard_control,
+                spawn_cards,
+                button_handler,
             ).run_if(in_state(GameState::OpeningPack)))
             // .add_systems(OnExit(GameState::OpeningPack), cleanup_ui);
             ;
@@ -125,7 +133,7 @@ fn spawn_card_pack(
 ) {
     // Build the animation graph
     let (graph, node_indices) = AnimationGraph::from_clip(
-        asset_server.load(GltfAssetLabel::Animation(0).from_asset(GLTF_PATH)),
+        asset_server.load(GltfAssetLabel::Animation(0).from_asset(TEST_ARMATURE_PATH)),
     );
 
     // Keep our animation graph in a Resource so that it can be inserted onto
@@ -137,8 +145,17 @@ fn spawn_card_pack(
     });
 
     // Fox
-    commands.spawn(SceneRoot(
-        asset_server.load(GltfAssetLabel::Scene(0).from_asset(GLTF_PATH)),
+    commands.spawn((
+        DespawnOnExit(GameState::OpeningPack),
+        SceneRoot(
+            asset_server.load(GltfAssetLabel::Scene(0).from_asset(TEST_ARMATURE_PATH)),
+        ),
+        Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
+        .with_rotation(
+            Quat::from_rotation_y(PI/2.0)
+        )
+        .with_scale(Vec3::splat(0.5))
+        ,
     ));
 }
 
@@ -159,7 +176,7 @@ fn setup_scene_once_loaded(
         // directly via the `AnimationPlayer`.
         transitions
             .play(&mut player, animations.animations, Duration::ZERO)
-            // .repeat()
+            .repeat()
             ;
 
         commands
@@ -170,7 +187,7 @@ fn setup_scene_once_loaded(
 }
 
 
-fn keyboard_control(
+fn spawn_cards(
     mut animation_players: Query<(Entity, &mut AnimationPlayer)>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -251,6 +268,65 @@ fn keyboard_control(
         } else {
         }
         
+    }
+}
+
+
+
+fn spawn_return_back_to_ui_button(
+    mut commands: Commands,
+) {
+    // spawn button
+    commands
+        .spawn((
+            Button,
+            MenuButton::InUI,
+            DespawnOnExit(GameState::OpeningPack),
+            Node {
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                position_type: PositionType::Absolute,
+                left: px(50),
+                right: px(50),
+                bottom: px(50),
+                ..default()
+            },
+        ))
+        .with_child((
+            DespawnOnExit(GameState::OpeningPack),
+            Text::new("Return back to UI"),
+            TextFont {
+                font_size: 30.0,
+                ..default()
+            },
+            TextColor::BLACK,
+            TextLayout::new_with_justify(Justify::Center),
+        ));
+}
+
+// Update
+fn button_handler(
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor),
+        (Changed<Interaction>, With<Button>),
+    >,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    for (interaction, mut color) in &mut interaction_query {
+        match *interaction {
+            Interaction::Pressed => {
+                // *color = BLUE.into();
+                *color = GREEN.into();
+                // Launch the opening!
+                next_state.set(GameState::InUI);
+            }
+            Interaction::Hovered => {
+                *color = GRAY.into();
+            }
+            Interaction::None => {
+                *color = WHITE.into();
+            }
+        }
     }
 }
 
