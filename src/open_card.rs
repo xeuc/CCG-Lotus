@@ -130,6 +130,12 @@ fn spawn_card_pack(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
+    
+    mut meshes:    ResMut<Assets<Mesh>>,
+    mut materials_color: ResMut<Assets<ColorMaterial>>,
+
+    mut animation_players: Query<(Entity, &mut AnimationPlayer)>,
+    mut materials_standard: ResMut<Assets<StandardMaterial>>,
 ) {
     // Build the animation graph
     let (graph, node_indices) = AnimationGraph::from_clip(
@@ -145,18 +151,63 @@ fn spawn_card_pack(
     });
 
     // Fox
-    commands.spawn((
-        DespawnOnExit(GameState::OpeningPack),
-        SceneRoot(
-            asset_server.load(GltfAssetLabel::Scene(0).from_asset(TEST_ARMATURE_PATH)),
-        ),
-        Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
-        .with_rotation(
-            Quat::from_rotation_y(PI/2.0)
-        )
-        .with_scale(Vec3::splat(0.5))
-        ,
-    ));
+    // commands.spawn((
+    //     DespawnOnExit(GameState::OpeningPack),
+    //     SceneRoot(
+    //         asset_server.load(GltfAssetLabel::Scene(0).from_asset(TEST_ARMATURE_PATH)),
+    //     ),
+    //     Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
+    //     .with_rotation(
+    //         Quat::from_rotation_y(PI/2.0)
+    //     )
+    //     .with_scale(Vec3::splat(0.5))
+    //     ,
+    // ));
+
+    let card_height = 20.0;
+    let card_width = 14.0;
+    let card_thickness = 0.1;
+
+
+
+    let image_height = card_width - 1.;
+    let image_width = card_height - 1.;
+            
+                // spawn frame of card
+                commands.spawn((
+                        Transform::from_xyz(0.0, 0.0, 2.0 + 0.0 as f32 * 0.1),
+                        Visibility::Hidden,
+                    DespawnOnExit(GameState::DevPlayground),
+                    Mesh3d(meshes.add(Cuboid::new(card_width, card_height, card_thickness))),
+                    MeshMaterial3d(
+                        materials_standard.add(StandardMaterial {
+                            base_color: Color::srgb(0.92, 0.24, 0.39),
+                            ..default()
+                        })
+                    ),
+                ))
+                .with_children(|parent| {
+                    // For Recto and verso
+                    for a in [("textures/40921678_S1J5493BMXVBDKB3RF7P22B9N0.jpeg", 1.0, Quat::from_rotation_y(0.0)), ("textures/25973315_8HS551035DXVATFV2SADZRBG30.jpeg", -1.0, Quat::from_rotation_y(PI))] {
+                        let photo_texture = asset_server.load(a.0);
+                        parent.spawn((
+                            DespawnOnExit(GameState::DevPlayground),
+                            Mesh3d(meshes.add(Plane3d {
+                                normal: Dir3::Z,
+                                half_size: Vec2::new(image_height/2., image_width/2.), // 13*19
+                            })),
+                            MeshMaterial3d(materials_standard.add(StandardMaterial {
+                                base_color_texture: Some(photo_texture),
+                                metallic: 0.0,
+                                perceptual_roughness: 1.0,
+                                ..default()
+                            })),
+                            Transform::from_translation(Vec3::new(0.0, 0.0, a.1 * card_thickness / 2.0 + 0.001)).with_rotation(a.2),
+                        ));
+                    }
+
+                });
+
 }
 
 
@@ -263,6 +314,7 @@ fn spawn_cards(
                     }
 
                 });
+
             }
 
         } else {
