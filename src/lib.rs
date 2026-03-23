@@ -9,7 +9,7 @@ mod input;
 #[cfg(target_os = "android")]
 mod android;
 mod move_camera;
-mod dev_playground;
+mod dev;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Default, States)]
 pub enum GameState {
@@ -50,7 +50,7 @@ pub fn main() {
             input::InputPlugin,
             #[cfg(target_os = "android")]
             android::AndroidPlugin,
-            dev_playground::DevPlaygroundPlugin,
+            dev::dev_playground::DevPlaygroundPlugin,
             // move_camera::CameraControllerPlugin,
         ))
         .run();
