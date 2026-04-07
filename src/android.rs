@@ -5,8 +5,18 @@ use bevy::prelude::*;
 // Windows/x86  | ✅ Yes
 // Android/arm  | ❌ No (Gltf/glb loads, armatured elements won't show up)
 
-use bevy::window::AppLifecycle;
-use bevy::winit::WinitSettings;
+
+use bevy::{
+    color::palettes::basic::*,
+    input::{gestures::RotationGesture, touch::TouchPhase},
+    log::{Level, LogPlugin},
+    prelude::*,
+    window::{AppLifecycle, ScreenEdge, WindowMode},
+    winit::WinitSettings,
+};
+
+use dev::components::CameraLocked;
+use crate::dev;
 
 pub struct AndroidPlugin;
 
