@@ -12,7 +12,7 @@ pub struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(Startup, spawn_switch_orientation_90d_button)
+            .add_systems(Startup, spawn_rot_button)
             .add_systems(OnEnter(GameState::InUI), (
                 spawn_camera,
                 spawn_buttons,
@@ -39,44 +39,42 @@ fn spawn_camera(mut commands: Commands) {
         DespawnOnExit(GameState::InUI)
     ));
 }
-
-// Globat across every states
-fn spawn_switch_orientation_90d_button(mut commands: Commands) {
+// Global across every states
+fn spawn_rot_button(mut commands: Commands) {
     // Spawn switch ui
-    // commands
-    //     .spawn((
-    //         Button,
-    //         Pickable { should_block_lower: true, is_hoverable: true },
-    //         Node {
-    //             justify_content: JustifyContent::Center,
-    //             align_items: AlignItems::Center,
-    //             position_type: PositionType::Absolute,
-    //             right: px(10),
-    //             top: px(10),
-    //             ..default()
-    //         },
-    //     ))
-    //     .observe(switch_orientation::<Pointer<Press>>())
-    //     .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
-    //     .observe(set_bg_on::<Pointer<Release>>(GRAY.into()))
-    //     .observe(set_bg_on::<Pointer<Over>>(GRAY.into()))
-    //     .observe(set_bg_on::<Pointer<Out>>(WHITE.into()))
-    //     .with_child((
-    //         Text::new("Rot"),
-    //         TextFont { font_size: 30.0, ..default() },
-    //         TextColor::BLACK,
-    //         TextLayout::new_with_justify(Justify::Center),
-    //         BackgroundColor(WHITE.into()),
-    //     ));
+    commands
+        .spawn((
+            Button,
+            Node {
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                position_type: PositionType::Absolute,
+                right: px(10),
+                top: px(10),
+                ..default()
+            },
+            BackgroundColor(WHITE.into()),
+            Pickable { should_block_lower: false, is_hoverable: false },
+        ))
+        .observe(switch_orientation::<Pointer<Press>>())
+        .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
+        .observe(set_bg_on::<Pointer<Release>>(GRAY.into()))
+        .observe(set_bg_on::<Pointer<Over>>(GRAY.into()))
+        .observe(set_bg_on::<Pointer<Out>>(WHITE.into()))
+        .with_child((
+            Text::new("Rot"),
+            TextFont { font_size: 30.0, ..default() },
+            TextColor::BLACK,
+            TextLayout::new_with_justify(Justify::Center),
+        ));
 }
 
 
 pub fn spawn_buttons(mut commands: Commands) {
     commands
         .spawn((
-            DespawnOnExit(GameState::DevPlayground),
-            Pickable { should_block_lower: false, is_hoverable: true }, // omg this does smtg
-            // But don't work for the hover
+            DespawnOnExit(GameState::InUI),
+            Pickable { should_block_lower: false, is_hoverable: false }, // omg this does smtg
             Node {
                 display: Display::Flex,
                 flex_direction: FlexDirection::RowReverse,

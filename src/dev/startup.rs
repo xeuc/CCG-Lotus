@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::{ecs::component, prelude::*};
+use bevy::prelude::*;
 use crate::{GameState, dev::components::*};
 
 
@@ -24,6 +24,7 @@ pub fn spawn_camera(mut commands: Commands) {
     // Spawn camera
     commands.spawn((
         DespawnOnExit(GameState::DevPlayground),
+        CameraLocked,
         Camera3d::default(),
         Projection::Perspective(PerspectiveProjection {
             fov: std::f32::consts::FRAC_PI_2,
@@ -121,3 +122,4 @@ pub fn spawn_scene(
         GltfAssetLabel::Scene(0).from_asset("models/Scene.gltf"),
     )));
 }
+

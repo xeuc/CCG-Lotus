@@ -14,6 +14,7 @@ pub fn spawn_buttons(mut commands: Commands) {
     commands
         .spawn((
             DespawnOnExit(GameState::DevPlayground),
+            Pickable { should_block_lower: false, is_hoverable: false }, // omg this does smtg => no
             Node {
                 display: Display::Flex,
                 flex_direction: FlexDirection::RowReverse,
@@ -30,11 +31,12 @@ pub fn spawn_buttons(mut commands: Commands) {
             // Return button
             parent.spawn((
                 Button,
-                BackgroundColor(WHITE.into()),
+                DespawnOnExit(GameState::DevPlayground),
                 Text::new("Return"),
                 TextFont { font_size: 30.0, ..default() },
                 TextColor::BLACK,
                 TextLayout::new_with_justify(Justify::Center),
+                BackgroundColor(WHITE.into()),
             ))
             .observe(set_game_state_on::<Pointer<Press>>(GameState::InUI))
             .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
@@ -47,11 +49,12 @@ pub fn spawn_buttons(mut commands: Commands) {
             // Swipe
             parent.spawn((
                 Button,
-                BackgroundColor(WHITE.into()),
                 Text::new("Swipe?"),
                 TextFont { font_size: 30.0, ..default() },
                 TextColor::BLACK,
                 TextLayout::new_with_justify(Justify::Center),
+                BackgroundColor(WHITE.into()),
+            Pickable { should_block_lower: true, is_hoverable: true },
             ))
             .observe(send_swipe_on::<Pointer<Press>>())
             .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
@@ -63,11 +66,12 @@ pub fn spawn_buttons(mut commands: Commands) {
             // Look Right
             parent.spawn((
                 Button,
-                BackgroundColor(WHITE.into()),
                 Text::new("LookRight"),
                 TextFont { font_size: 30.0, ..default() },
                 TextColor::BLACK,
                 TextLayout::new_with_justify(Justify::Center),
+                BackgroundColor(WHITE.into()),
+            Pickable { should_block_lower: true, is_hoverable: true },
             ))
             .observe(look_right_on::<Pointer<Press>>())
             .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
@@ -80,11 +84,12 @@ pub fn spawn_buttons(mut commands: Commands) {
             // Look left 
             parent.spawn((
                 Button,
-                BackgroundColor(WHITE.into()),
                 Text::new("LookLeft"),
                 TextFont { font_size: 30.0, ..default() },
                 TextColor::BLACK,
                 TextLayout::new_with_justify(Justify::Center),
+                BackgroundColor(WHITE.into()),
+            Pickable { should_block_lower: true, is_hoverable: true },
             ))
             .observe(look_left_on::<Pointer<Press>>())
             .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
@@ -96,11 +101,12 @@ pub fn spawn_buttons(mut commands: Commands) {
             // Lock cam
             parent.spawn((
                 Button,
-                BackgroundColor(WHITE.into()),
                 Text::new("LockCam"),
                 TextFont { font_size: 30.0, ..default() },
                 TextColor::BLACK,
                 TextLayout::new_with_justify(Justify::Center),
+                BackgroundColor(WHITE.into()),
+            Pickable { should_block_lower: true, is_hoverable: true },
             ))
             .observe(lock_cam::<Pointer<Press>>())
             .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
@@ -112,11 +118,12 @@ pub fn spawn_buttons(mut commands: Commands) {
             // UnLock cam
             parent.spawn((
                 Button,
-                BackgroundColor(WHITE.into()),
                 Text::new("UnLockCam"),
                 TextFont { font_size: 30.0, ..default() },
                 TextColor::BLACK,
                 TextLayout::new_with_justify(Justify::Center),
+                BackgroundColor(WHITE.into()),
+            Pickable { should_block_lower: true, is_hoverable: true },
             ))
             .observe(unlock_cam::<Pointer<Press>>())
             .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
@@ -139,12 +146,20 @@ pub fn spawn_buttons(mut commands: Commands) {
 // UI HELPERS
 // =============================================================================
 
+// pub fn set_bg_on<E: EntityEvent>(
+//     color: BackgroundColor,
+// ) -> impl Fn(On<E>, Single<&mut BackgroundColor>) {
+//     move |_, mut query| { **query = color.clone(); }
+// }
 pub fn set_bg_on<E: EntityEvent>(
     color: BackgroundColor,
-) -> impl Fn(On<E>, Single<&mut BackgroundColor>) {
-    move |_, mut query| { **query = color.clone(); }
+) -> impl Fn(On<E>, Query<&mut BackgroundColor>) {
+    move |event, mut query| {
+        if let Ok(mut bg) = query.get_mut(event.event_target()) {
+            *bg = color.clone();
+        }
+    }
 }
-
 pub fn lock_cam<E: EntityEvent>() -> impl FnMut(On<E>, Commands, Single<Entity, (With<Camera3d>, Without<CameraLocked>)>) {
     move |_, mut commands, cam| { commands.entity(*cam).insert(CameraLocked); }
 }

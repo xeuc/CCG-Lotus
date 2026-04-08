@@ -5,7 +5,6 @@ use bevy::{light::DirectionalLightShadowMap, prelude::*};
 mod user_interface;
 mod open_card;
 mod audio;
-mod input;
 #[cfg(target_os = "android")]
 mod android;
 mod move_camera;
@@ -48,7 +47,6 @@ pub fn main() {
             user_interface::UIPlugin,
             open_card::OpenCardPlugin,
             
-            input::InputPlugin,
             #[cfg(target_os = "android")]
             android::AndroidPlugin,
             dev::dev_playground::DevPlaygroundPlugin,
