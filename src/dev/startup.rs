@@ -29,7 +29,19 @@ pub fn spawn_camera(mut commands: Commands) {
             fov: std::f32::consts::FRAC_PI_4,
             ..default()
         }),
-        Transform::from_xyz(-10.0, 35.0, 10.0),
+        Transform::default()
+            .with_translation(Vec3::new(-11.97946834564209, 30.476943969726563, 4.821719646453857))
+            .with_rotation(Quat::from_xyzw(0.0, -0.7071067094802856, 0.0, 0.7071067094802856))
+            .with_scale(Vec3::new(1.0, 1.0, 1.0)),
+// 2026-04-11T14:00:25.174304Z  INFO lotus_ccg::dev::ui: cam_trans_quer.translation.x=-11.97946834564209
+// 2026-04-11T14:00:25.174609Z  INFO lotus_ccg::dev::ui: cam_trans_quer.translation.y=30.476943969726563
+// 2026-04-11T14:00:25.174872Z  INFO lotus_ccg::dev::ui: cam_trans_quer.translation.z=4.821719646453857
+// 2026-04-11T14:00:25.175084Z  INFO lotus_ccg::dev::ui: cam_trans_quer.rotation.x=0.0
+// 2026-04-11T14:00:25.175329Z  INFO lotus_ccg::dev::ui: cam_trans_quer.rotation.y=-0.7071067094802856
+// 2026-04-11T14:00:25.175503Z  INFO lotus_ccg::dev::ui: cam_trans_quer.rotation.z=0.0
+// 2026-04-11T14:00:25.175654Z  INFO lotus_ccg::dev::ui: cam_trans_quer.scale.x=1.0
+// 2026-04-11T14:00:25.175834Z  INFO lotus_ccg::dev::ui: cam_trans_quer.scale.y=1.0
+// 2026-04-11T14:00:25.175975Z  INFO lotus_ccg::dev::ui: cam_trans_quer.scale.z=1.0
         // FreeCamera { // set by button xoxo
         //     sensitivity: 0.2,
         //     friction: 25.0,

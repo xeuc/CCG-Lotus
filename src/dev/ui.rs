@@ -5,6 +5,8 @@ use bevy::{camera_controller::free_camera::FreeCamera, color::palettes::basic::*
 use crate::{GameState, dev::components::*};
 
 
+use crate::dev::dev_playground::*;
+use crate::dev::*;
 
 // =============================================================================
 // UI
@@ -133,8 +135,39 @@ pub fn spawn_buttons(mut commands: Commands) {
             ;
 
             // print Camera info
+            parent.spawn((
+                Button,
+                Text::new("PrintCam"),
+                TextFont { font_size: 30.0, ..default() },
+                TextColor::BLACK,
+                TextLayout::new_with_justify(Justify::Center),
+                BackgroundColor(WHITE.into()),
+            Pickable { should_block_lower: true, is_hoverable: true },
+            ))
+            .observe(print_cam::<Pointer<Press>>())
+            .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
+            .observe(set_bg_on::<Pointer<Release>>(GRAY.into()))
+            .observe(set_bg_on::<Pointer<Over>>(GRAY.into()))
+            .observe(set_bg_on::<Pointer<Out>>(WHITE.into()))
+            ;
 
             // pause game
+            parent.spawn((
+                Button,
+                Text::new("PauseGame"),
+                TextFont { font_size: 30.0, ..default() },
+                TextColor::BLACK,
+                TextLayout::new_with_justify(Justify::Center),
+                BackgroundColor(WHITE.into()),
+            Pickable { should_block_lower: true, is_hoverable: true },
+            ))
+            .observe(pause_game_on::<Pointer<Press>>())
+            .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
+            .observe(set_bg_on::<Pointer<Release>>(GRAY.into()))
+            .observe(set_bg_on::<Pointer<Over>>(GRAY.into()))
+            .observe(set_bg_on::<Pointer<Out>>(WHITE.into()))
+            ;
+
 
         });
 }
@@ -178,6 +211,70 @@ pub fn unlock_cam<E: EntityEvent>() -> impl FnMut(On<E>, Commands, Single<Entity
         });
     }
 }
+
+pub fn pause_game_on<E: EntityEvent>() -> impl FnMut(On<E>, Commands, ResMut<NextState<IsPaused>>) {
+    move |_, mut commands, mut next_state| {
+        // create a substate pause so that you sdon't despawn all curent buttons
+        // commands.spawn() a big button "unpause" at the middle of the screen
+        // That will revert back the state
+        // that button would have a Despawn on Exit (SUBSTATE_PAUSE) <= never done before
+        next_state.set(IsPaused::Paused);
+        
+    
+        commands.spawn((
+            DespawnOnExit(IsPaused::Paused),
+            Button,
+            Node {
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                position_type: PositionType::Absolute,
+                left: percent(50),
+                top: percent(50),
+                ..default()
+            },
+            BackgroundColor(WHITE.into()),
+            Pickable { should_block_lower: true, is_hoverable: true },
+        ))
+        .observe(unpause_game_on::<Pointer<Press>>())
+        .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
+        .observe(set_bg_on::<Pointer<Release>>(GRAY.into()))
+        .observe(set_bg_on::<Pointer<Over>>(GRAY.into()))
+        .observe(set_bg_on::<Pointer<Out>>(WHITE.into()))
+        .with_child((
+            Text::new("UNPAUSE"),
+            TextFont { font_size: 30.0, ..default() },
+            TextColor::BLACK,
+            TextLayout::new_with_justify(Justify::Center),
+        ));
+    }
+}
+
+
+pub fn unpause_game_on<E: EntityEvent>() -> impl FnMut(On<E>, ResMut<NextState<IsPaused>>) {
+    move |_, mut next_state| {
+        // create a substate pause so that you sdon't despawn all curent buttons
+        // commands.spawn() a big button "unpause" at the middle of the screen
+        // That will revert back the state
+        // that button would have a Despawn on Exit (SUBSTATE_PAUSE) <= never done before
+        next_state.set(IsPaused::Running);
+        
+    }
+}
+
+pub fn print_cam<E: EntityEvent>() -> impl FnMut(On<E>, Single<&Transform, With<Camera3d>>) {
+    move |_, cam_trans_quer| {
+        info!(cam_trans_quer.translation.x);
+        info!(cam_trans_quer.translation.y);
+        info!(cam_trans_quer.translation.z);
+        info!(cam_trans_quer.rotation.x);
+        info!(cam_trans_quer.rotation.y);
+        info!(cam_trans_quer.rotation.z);
+        info!(cam_trans_quer.scale.x);
+        info!(cam_trans_quer.scale.y);
+        info!(cam_trans_quer.scale.z);
+    }
+}
+
 
 pub fn set_game_state_on<E: EntityEvent>(
     new_state: GameState,

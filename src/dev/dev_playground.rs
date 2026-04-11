@@ -16,7 +16,7 @@ impl Plugin for DevPlaygroundPlugin {
             .add_message::<SwipeEvent>()
             .init_resource::<CardProgress>()
             .init_resource::<NextBatchId>()
-
+            .add_sub_state::<IsPaused>()
             // Global OnAdd observers — fire when their step marker is added to
             // any entity. In practice only Pack ever receives step markers.
             // .add_observer(on_add_step_intro)
@@ -58,7 +58,7 @@ impl Plugin for DevPlaygroundPlugin {
             )
             .chain()
             .run_if(in_state(GameState::DevPlayground)))
-            .add_systems(OnExit(GameState::DevPlayground), despawn_observers)
+            // .add_systems(OnExit(GameState::DevPlayground), despawn_observers)
             ;
     }
 }
@@ -75,26 +75,51 @@ fn move_paper(
 }
 
 
-// OBSERVERS RELATED
-#[derive(Component)]
-struct DevObserver;
 fn spawn_observers(
     mut commands: Commands,
 ) {
-    commands.spawn((Observer::new(on_add_step_intro), DevObserver));
-    commands.spawn((Observer::new(on_add_step_opening), DevObserver));
-    commands.spawn((Observer::new(on_add_step_first_card), DevObserver));
-    commands.spawn((Observer::new(on_add_step_card_reveal), DevObserver));
-    commands.spawn((Observer::new(on_add_step_next_card), DevObserver));
+    commands.spawn((
+        DespawnOnExit(GameState::DevPlayground),
+        Observer::new(on_add_step_intro),
+    ));
+    commands.spawn((
+        DespawnOnExit(GameState::DevPlayground),
+        Observer::new(on_add_step_opening),
+    ));
+    commands.spawn((
+        DespawnOnExit(GameState::DevPlayground),
+        Observer::new(on_add_step_first_card),
+    ));
+    commands.spawn((
+        DespawnOnExit(GameState::DevPlayground),
+        Observer::new(on_add_step_card_reveal),
+    ));
+    commands.spawn((
+        DespawnOnExit(GameState::DevPlayground),
+        Observer::new(on_add_step_next_card),
+    ));
+    commands.spawn((
+        DespawnOnExit(GameState::DevPlayground),
+        Observer::new(on_tween_batch_done),
+    ));
+    commands.spawn((
+        DespawnOnExit(GameState::DevPlayground),
+        Observer::new(on_player_swiped),
+    ));
+}
 
-    commands.spawn((Observer::new(on_tween_batch_done), DevObserver));
-    commands.spawn((Observer::new(on_player_swiped), DevObserver));
+
+// In this case, instead of deriving `States`, we derive `SubStates`
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
+// And we need to add an attribute to let us know what the source state is
+// and what value it needs to have. This will ensure that unless we're
+// in [`AppState::InGame`], the [`IsPaused`] state resource
+// will not exist.
+#[source(GameState = GameState::DevPlayground)]
+#[states(scoped_entities)]
+pub enum IsPaused {
+    #[default]
+    Running,
+    Paused,
 }
-fn despawn_observers(
-    mut commands: Commands,
-    q: Query<Entity, With<DevObserver>>,
-) {
-    for e in &q {
-        commands.entity(e).despawn();
-    }
-}
+
