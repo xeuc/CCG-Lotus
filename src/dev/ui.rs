@@ -33,14 +33,13 @@ pub fn spawn_buttons(mut commands: Commands) {
             // Return button
             parent.spawn((
                 Button,
-                DespawnOnExit(GameState::DevPlayground),
-                Text::new("Return"),
+                Text::new("Exit"),
                 TextFont { font_size: 30.0, ..default() },
                 TextColor::BLACK,
                 TextLayout::new_with_justify(Justify::Center),
                 BackgroundColor(WHITE.into()),
             ))
-            .observe(set_game_state_on::<Pointer<Press>>(GameState::DevPlayground))
+            .observe(close_app_on::<Pointer<Press>>())
             .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
             .observe(set_bg_on::<Pointer<Release>>(GRAY.into()))
             .observe(set_bg_on::<Pointer<Over>>(GRAY.into()))
@@ -349,4 +348,8 @@ pub fn look_left_on<E: EntityEvent>() -> impl FnMut(On<E>, Single<&mut Transform
 
 pub fn look_right_on<E: EntityEvent>() -> impl FnMut(On<E>, Single<&mut Transform, With<Camera3d>>) {
     move |_, mut cam_trans_quer| { cam_trans_quer.rotate_y(-PI/2.0) }
+}
+
+pub fn close_app_on<E: EntityEvent>() -> impl Fn(On<E>, MessageWriter<AppExit>) {
+    move |_, mut app_exit_events| { app_exit_events.write(AppExit::Success); }
 }

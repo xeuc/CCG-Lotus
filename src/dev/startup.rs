@@ -57,6 +57,7 @@ pub fn spawn_camera(mut commands: Commands) {
 pub fn spawn_light(mut commands: Commands) {
     // Spawn light
     commands.spawn((
+        DespawnOnExit(GameState::DevPlayground),
         PointLight {
             shadows_enabled: true,
             intensity: 10_000_000.,
@@ -137,8 +138,11 @@ pub fn spawn_scene(
     mut commands:  Commands,
     asset_server: Res<AssetServer>,
 ) {
-    commands.spawn(SceneRoot(asset_server.load(
-        GltfAssetLabel::Scene(0).from_asset("models/Scene.gltf"),
-    )));
+    commands.spawn((
+        DespawnOnExit(GameState::DevPlayground),
+        SceneRoot(asset_server.load(
+            GltfAssetLabel::Scene(0).from_asset("models/Scene.gltf"),
+        ))
+    ));
 }
 

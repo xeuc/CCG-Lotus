@@ -31,7 +31,7 @@ impl Plugin for AndroidPlugin {
                     // Only run the lifetime handler when an [`AudioSink`] component exists in the world.
                     // This ensures we don't try to manage audio that hasn't been initialized yet.
                     handle_lifetime.run_if(any_with_component::<AudioSink>),
-                    move_camera,
+                    // move_camera,
                 ),
             )
             ;

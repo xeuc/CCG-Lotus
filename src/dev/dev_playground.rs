@@ -51,10 +51,10 @@ impl Plugin for DevPlaygroundPlugin {
 
             // Three generic systems that know nothing about the pack sequence.
             .add_systems(Update, (
-                tick_transform_tweens,
-                tick_arc_tweens,   // runs after — arc wins if both exist on same entity
-                dispatch_swipe,
-                move_paper,
+                // tick_transform_tweens,
+                // tick_arc_tweens,   // runs after — arc wins if both exist on same entity
+                // dispatch_swipe,
+                move_packs,
             )
             .chain()
             .run_if(in_state(GameState::DevPlayground)))
@@ -64,7 +64,7 @@ impl Plugin for DevPlaygroundPlugin {
 }
 
 
-fn move_paper(
+fn move_packs(
     mut query: Query<(&Name, &mut Transform)>,
 ) {
     for (name, mut transform) in &mut query {
