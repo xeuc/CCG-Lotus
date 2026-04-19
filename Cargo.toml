@@ -9,7 +9,9 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 bevy = { version = "0.18.1", features = ["jpeg", "free_camera"] }
 bevy_tweening = "0.15.0"
+directories = "6.0.0"
 rand = "0.10.0"
+winit = "0.30.13"
 
 [lib]
 name = "lotus_ccg"

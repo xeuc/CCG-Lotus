@@ -1,5 +1,7 @@
 
 use std::f32::consts::PI;
+use std::fs;
+use std::path::PathBuf;
 
 use bevy::{camera_controller::free_camera::FreeCamera, color::palettes::basic::*, prelude::*};
 use crate::{GameState, dev::components::*};
@@ -201,6 +203,23 @@ pub fn spawn_buttons(mut commands: Commands) {
             .observe(set_bg_on::<Pointer<Out>>(WHITE.into()))
             ;
 
+            // Write file
+            parent.spawn((
+                Button,
+                Text::new("WriteToFile"),
+                TextFont { font_size: 30.0, ..default() },
+                TextColor::BLACK,
+                TextLayout::new_with_justify(Justify::Center),
+                BackgroundColor(WHITE.into()),
+            Pickable { should_block_lower: true, is_hoverable: true },
+            ))
+            .observe(write_file_on::<Pointer<Press>>())
+            .observe(set_bg_on::<Pointer<Press>>(GREEN.into()))
+            .observe(set_bg_on::<Pointer<Release>>(GRAY.into()))
+            .observe(set_bg_on::<Pointer<Over>>(GRAY.into()))
+            .observe(set_bg_on::<Pointer<Out>>(WHITE.into()))
+            ;
+
 
         });
 }
@@ -353,3 +372,47 @@ pub fn look_right_on<E: EntityEvent>() -> impl FnMut(On<E>, Single<&mut Transfor
 pub fn close_app_on<E: EntityEvent>() -> impl Fn(On<E>, MessageWriter<AppExit>) {
     move |_, mut app_exit_events| { app_exit_events.write(AppExit::Success); }
 }
+
+
+
+
+
+pub fn write_file_on<E: EntityEvent>() -> impl Fn(On<E>) {
+    move |_| {
+        #[cfg(target_os = "android")]
+        let data_path: PathBuf = {
+            let android_app = bevy::android::ANDROID_APP
+                .get()
+                .expect("Bevy must be setup with the #[bevy_main] macro on Android");
+            android_app
+                .internal_data_path()
+                .expect("App has no data path")
+        };
+        #[cfg(not(target_os = "android"))]
+        let data_path: PathBuf = PathBuf::from(".");
+
+        let savefile_path = data_path.join("save.txt");
+        println!("LOTUSDEBUG: Path to write file is: {}", savefile_path.display());
+
+        // Read
+        if savefile_path.exists() {
+            match fs::read_to_string(&savefile_path) {
+                Ok(content) => println!("LOTUSDEBUG: File loaded: {}", content),
+                Err(e) => println!("LOTUSDEBUG: Error loading file: {}", e),
+            }
+        } else {
+            println!("LOTUSDEBUG: NO EXISTING SAVE");
+        }
+
+        // Write
+        let data = format!("{:?}", std::time::SystemTime::now());
+        println!("LOTUSDEBUG: Data to write: {}", data);
+        match fs::write(&savefile_path, &data) {
+            Ok(_) => println!("LOTUSDEBUG: data written"),
+            Err(e) => println!("LOTUSDEBUG: Data not written: {}", e),
+        }
+    }
+}
+
+
+
